@@ -1,0 +1,244 @@
+{
+  "radarAxes": [
+    { "label": "Frontend / UX", "value": 94, "fullMark": 100, "key": "frontend" },
+    { "label": "Backend Systems", "value": 88, "fullMark": 100, "key": "backend" },
+    { "label": "AI & Machine Learning", "value": 92, "fullMark": 100, "key": "aiml" },
+    { "label": "Computer Vision", "value": 90, "fullMark": 100, "key": "vision" },
+    { "label": "Cinematography", "value": 98, "fullMark": 100, "key": "cinema" },
+    { "label": "Color Grading / VFX", "value": 95, "fullMark": 100, "key": "post" }
+  ],
+  "categories": [
+    "Languages",
+    "Frameworks",
+    "AI/ML",
+    "Tools",
+    "Creative Tools"
+  ],
+  "skills": [
+    {
+      "name": "Python",
+      "category": "Languages",
+      "icon": "python",
+      "level": 94,
+      "radarKey": "aiml",
+      "experience": "4+ yrs",
+      "tags": ["Data Science", "PyTorch", "OpenCV", "FastAPI"]
+    },
+    {
+      "name": "TypeScript",
+      "category": "Languages",
+      "icon": "typescript",
+      "level": 92,
+      "radarKey": "frontend",
+      "experience": "3+ yrs",
+      "tags": ["Next.js", "React", "Node.js", "Strict Typing"]
+    },
+    {
+      "name": "JavaScript (ESNext)",
+      "category": "Languages",
+      "icon": "javascript",
+      "level": 96,
+      "radarKey": "frontend",
+      "experience": "5+ yrs",
+      "tags": ["Async/Await", "DOM", "Web APIs"]
+    },
+    {
+      "name": "C++",
+      "category": "Languages",
+      "icon": "cpp",
+      "level": 84,
+      "radarKey": "backend",
+      "experience": "2+ yrs",
+      "tags": ["DSA", "Embedded", "Performance"]
+    },
+    {
+      "name": "SQL & PostgreSQL",
+      "category": "Languages",
+      "icon": "database",
+      "level": 86,
+      "radarKey": "backend",
+      "experience": "3+ yrs",
+      "tags": ["Prisma", "Supabase", "Query Optimization"]
+    },
+    {
+      "name": "Next.js 15 / App Router",
+      "category": "Frameworks",
+      "icon": "nextjs",
+      "level": 95,
+      "radarKey": "frontend",
+      "experience": "3+ yrs",
+      "tags": ["SSR", "ISR", "Server Actions", "Turbopack"]
+    },
+    {
+      "name": "React 19",
+      "category": "Frameworks",
+      "icon": "react",
+      "level": 96,
+      "radarKey": "frontend",
+      "experience": "4+ yrs",
+      "tags": ["Hooks", "Custom Architecture", "Zustand"]
+    },
+    {
+      "name": "Tailwind CSS",
+      "category": "Frameworks",
+      "icon": "tailwind",
+      "level": 98,
+      "radarKey": "frontend",
+      "experience": "4+ yrs",
+      "tags": ["v4", "Design Systems", "Responsive UI"]
+    },
+    {
+      "name": "Framer Motion",
+      "category": "Frameworks",
+      "icon": "motion",
+      "level": 92,
+      "radarKey": "frontend",
+      "experience": "3+ yrs",
+      "tags": ["Layout Animations", "Gestures", "Scroll Springs"]
+    },
+    {
+      "name": "FastAPI & Express",
+      "category": "Frameworks",
+      "icon": "server",
+      "level": 88,
+      "radarKey": "backend",
+      "experience": "3+ yrs",
+      "tags": ["REST APIs", "Pydantic", "Microservices"]
+    },
+    {
+      "name": "PyTorch",
+      "category": "AI/ML",
+      "icon": "pytorch",
+      "level": 92,
+      "radarKey": "aiml",
+      "experience": "2+ yrs",
+      "tags": ["CNNs", "Transformers", "Model Training"]
+    },
+    {
+      "name": "OpenCV",
+      "category": "AI/ML",
+      "icon": "opencv",
+      "level": 94,
+      "radarKey": "vision",
+      "experience": "3+ yrs",
+      "tags": ["Object Tracking", "Image Processing", "Feature Extraction"]
+    },
+    {
+      "name": "TensorFlow / Keras",
+      "category": "AI/ML",
+      "icon": "tensorflow",
+      "level": 86,
+      "radarKey": "aiml",
+      "experience": "2+ yrs",
+      "tags": ["Deep Learning", "Transfer Learning"]
+    },
+    {
+      "name": "YOLO (v8 / v11)",
+      "category": "AI/ML",
+      "icon": "yolo",
+      "level": 90,
+      "radarKey": "vision",
+      "experience": "2+ yrs",
+      "tags": ["Real-time Detection", "Edge Inference"]
+    },
+    {
+      "name": "Hugging Face & LLMs",
+      "category": "AI/ML",
+      "icon": "brain",
+      "level": 89,
+      "radarKey": "aiml",
+      "experience": "2+ yrs",
+      "tags": ["RAG", "Embeddings", "Fine-Tuning"]
+    },
+    {
+      "name": "Git & GitHub",
+      "category": "Tools",
+      "icon": "github",
+      "level": 95,
+      "radarKey": "backend",
+      "experience": "5+ yrs",
+      "tags": ["CI/CD", "Actions", "Monorepos"]
+    },
+    {
+      "name": "Docker & Containers",
+      "category": "Tools",
+      "icon": "docker",
+      "level": 85,
+      "radarKey": "backend",
+      "experience": "2+ yrs",
+      "tags": ["Containerization", "Multi-stage builds"]
+    },
+    {
+      "name": "Vercel & Supabase",
+      "category": "Tools",
+      "icon": "cloud",
+      "level": 92,
+      "radarKey": "backend",
+      "experience": "3+ yrs",
+      "tags": ["Edge Functions", "Postgres", "Auth"]
+    },
+    {
+      "name": "Linux / Bash",
+      "category": "Tools",
+      "icon": "terminal",
+      "level": 90,
+      "radarKey": "backend",
+      "experience": "4+ yrs",
+      "tags": ["Shell Scripting", "Server Config", "Zsh"]
+    },
+    {
+      "name": "DaVinci Resolve Studio",
+      "category": "Creative Tools",
+      "icon": "resolve",
+      "level": 98,
+      "radarKey": "post",
+      "experience": "7+ yrs",
+      "tags": ["Color Grading", "Fusion VFX", "Fairlight", "ACES/Log"]
+    },
+    {
+      "name": "Adobe Premiere Pro",
+      "category": "Creative Tools",
+      "icon": "premiere",
+      "level": 96,
+      "radarKey": "cinema",
+      "experience": "10 yrs",
+      "tags": ["Narrative Editing", "Multicam", "Sound Design"]
+    },
+    {
+      "name": "Adobe After Effects",
+      "category": "Creative Tools",
+      "icon": "aftereffects",
+      "level": 90,
+      "radarKey": "post",
+      "experience": "6+ yrs",
+      "tags": ["Motion Graphics", "Rotoscoping", "Trackers"]
+    },
+    {
+      "name": "Adobe Lightroom Classic",
+      "category": "Creative Tools",
+      "icon": "lightroom",
+      "level": 98,
+      "radarKey": "cinema",
+      "experience": "10 yrs",
+      "tags": ["Raw Processing", "Custom Color Presets", "Batch Workflows"]
+    },
+    {
+      "name": "Sony FX3 / A7IV System",
+      "category": "Creative Tools",
+      "icon": "camera",
+      "level": 99,
+      "radarKey": "cinema",
+      "experience": "10 yrs",
+      "tags": ["S-Log3 Cine", "4K 120p", "G-Master Prime Lenses"]
+    },
+    {
+      "name": "DJI Drones & Gimbals",
+      "category": "Creative Tools",
+      "icon": "drone",
+      "level": 94,
+      "radarKey": "cinema",
+      "experience": "6+ yrs",
+      "tags": ["Aerial Cinematography", "RS3 Pro Gimbal Tracking"]
+    }
+  ]
+}
