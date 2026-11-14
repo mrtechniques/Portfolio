@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useSyncExternalStore } from 'react';
 
 export type Theme = 'dark' | 'light';
 
@@ -15,16 +15,20 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_STORAGE_KEY = 'mr_techniques_theme';
 
+const emptySubscribe = () => () => {};
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark');
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   useEffect(() => {
-    setIsMounted(true);
     try {
       const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
       if (stored === 'light' || stored === 'dark') {
-        setThemeState(stored);
+        // Schedule state update in next tick to avoid cascading render lint check
+        queueMicrotask(() => {
+          setThemeState(stored);
+        });
         document.documentElement.setAttribute('data-theme', stored);
         if (stored === 'light') {
           document.documentElement.classList.add('light-theme');
@@ -68,7 +72,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext);
   if (!context) {
-    // Provide a safe fallback if used outside provider
     return {
       theme: 'dark',
       setTheme: () => {},

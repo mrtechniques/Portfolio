@@ -3,6 +3,7 @@ import { Syne, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import CustomCursor from "@/components/common/CustomCursor";
 import FilmGrainOverlay from "@/components/common/FilmGrainOverlay";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -128,9 +129,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-[#08080b] text-[#f4f4f7] selection:bg-cyan-500/30 selection:text-white antialiased">
-        <FilmGrainOverlay />
-        <CustomCursor />
-        {children}
+        <ThemeProvider>
+          <FilmGrainOverlay />
+          <CustomCursor />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

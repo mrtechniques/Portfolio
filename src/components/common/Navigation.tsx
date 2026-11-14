@@ -2,15 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Film, Camera, Code2, MessageSquare, Sparkles, ChevronRight } from 'lucide-react';
+import { Film, Camera, Code2, MessageSquare, ChevronRight, Sun, Moon, Play } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function Navigation() {
   const [activeSection, setActiveSection] = useState('hero');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isInIntro, setIsInIntro] = useState(true);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 40);
+
+      const introEl = document.getElementById('intro-sequence');
+      if (introEl) {
+        const rect = introEl.getBoundingClientRect();
+        // Intro covers until its bottom is near the top
+        setIsInIntro(rect.bottom > 80);
+      } else {
+        setIsInIntro(false);
+      }
 
       const sections = ['films', 'photos', 'software', 'arsenal', 'about', 'services', 'contact'];
       for (const section of sections) {
@@ -26,6 +38,7 @@ export default function Navigation() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -36,7 +49,11 @@ export default function Navigation() {
     <>
       {/* DESKTOP TOP STICKY SLIM NAV */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 hidden md:block ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 hidden md:block ${
+          isInIntro
+            ? 'opacity-0 -translate-y-4 pointer-events-none'
+            : 'opacity-100 translate-y-0 pointer-events-auto'
+        } ${
           isScrolled
             ? 'bg-[#08080b]/90 backdrop-blur-md border-b border-white/[0.08] py-3 shadow-2xl'
             : 'bg-transparent py-5'
@@ -45,8 +62,9 @@ export default function Navigation() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Brand Logo & Tag */}
           <Link
-            href="#hero"
+            href="#intro-sequence"
             className="group flex items-center gap-3 select-none"
+            title="Scroll to Cinematic Intro"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 via-rose-500 to-cyan-400 p-[1px] group-hover:scale-105 transition-transform">
               <div className="w-full h-full bg-[#09090c] rounded-[7px] flex items-center justify-center font-display font-black text-xs text-white">
@@ -65,6 +83,14 @@ export default function Navigation() {
 
           {/* Desktop Navigation Links with Section Accent Indicators */}
           <nav className="flex items-center gap-1.5 p-1 rounded-full bg-zinc-900/60 border border-white/[0.07] backdrop-blur-md">
+            <Link
+              href="#intro-sequence"
+              className="px-3 py-1.5 rounded-full text-xs font-mono tracking-wide transition-all text-zinc-400 hover:text-white hover:bg-white/[0.04] flex items-center gap-1.5"
+            >
+              <Play className="w-3 h-3 text-rose-400" />
+              INTRO
+            </Link>
+
             <Link
               href="#films"
               className={`px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wide transition-all flex items-center gap-1.5 ${
@@ -135,8 +161,23 @@ export default function Navigation() {
             </Link>
           </nav>
 
-          {/* Quick Contact & WhatsApp Beacon */}
+          {/* Quick Contact & Theme Toggle & WhatsApp */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              className="p-2 rounded-full bg-zinc-900/60 border border-white/[0.08] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-cyan-400" />
+              )}
+            </button>
+
             <span className="hidden lg:flex items-center gap-2 text-[11px] font-mono text-zinc-400 px-3 py-1 rounded-full bg-zinc-900/40 border border-zinc-800">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               AVAILABLE
@@ -157,8 +198,12 @@ export default function Navigation() {
       </header>
 
       {/* MOBILE TOP MINIMAL HEADER */}
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden bg-[#08080b]/90 backdrop-blur-lg border-b border-white/[0.07] px-4 py-3 flex items-center justify-between">
-        <Link href="#hero" className="flex items-center gap-2">
+      <div
+        className={`fixed top-0 left-0 right-0 z-40 md:hidden bg-[#08080b]/90 backdrop-blur-lg border-b border-white/[0.07] px-4 py-3 flex items-center justify-between transition-all duration-500 ${
+          isInIntro ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'
+        }`}
+      >
+        <Link href="#intro-sequence" className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-gradient-to-br from-amber-400 via-rose-500 to-cyan-400 p-[1px]">
             <div className="w-full h-full bg-[#09090c] rounded-[3px] flex items-center justify-center font-display font-black text-[10px] text-white">
               MT
@@ -169,20 +214,43 @@ export default function Navigation() {
           </span>
         </Link>
 
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          WhatsApp
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-1.5 rounded-full bg-zinc-900/80 border border-white/10 text-zinc-300"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-cyan-400" />}
+          </button>
+
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            WhatsApp
+          </a>
+        </div>
       </div>
 
       {/* MOBILE BOTTOM FLOATING TAB BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe">
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe transition-all duration-500 ${
+          isInIntro ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'
+        }`}
+      >
         <div className="mx-3 mb-2 rounded-2xl bg-[#0e0e13]/95 backdrop-blur-xl border border-white/[0.1] shadow-2xl p-1.5 flex items-center justify-around">
+          <Link
+            href="#intro-sequence"
+            className="flex flex-col items-center justify-center py-1.5 px-2.5 rounded-xl transition-all text-zinc-400 hover:text-white"
+          >
+            <Play className="w-4 h-4 mb-0.5 text-rose-400" />
+            <span className="text-[9px] font-mono tracking-wider">INTRO</span>
+          </Link>
+
           <Link
             href="#films"
             className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
@@ -191,8 +259,8 @@ export default function Navigation() {
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <Film className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-mono tracking-wider">FILMS</span>
+            <Film className="w-4 h-4 mb-0.5" />
+            <span className="text-[9px] font-mono tracking-wider">FILMS</span>
           </Link>
 
           <Link
@@ -203,8 +271,8 @@ export default function Navigation() {
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <Camera className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-mono tracking-wider">PHOTOS</span>
+            <Camera className="w-4 h-4 mb-0.5" />
+            <span className="text-[9px] font-mono tracking-wider">PHOTOS</span>
           </Link>
 
           <Link
@@ -215,8 +283,8 @@ export default function Navigation() {
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <Code2 className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-mono tracking-wider">CODE</span>
+            <Code2 className="w-4 h-4 mb-0.5" />
+            <span className="text-[9px] font-mono tracking-wider">CODE</span>
           </Link>
 
           <Link
@@ -227,8 +295,8 @@ export default function Navigation() {
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <MessageSquare className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-mono tracking-wider">CONTACT</span>
+            <MessageSquare className="w-4 h-4 mb-0.5" />
+            <span className="text-[9px] font-mono tracking-wider">CONTACT</span>
           </Link>
         </div>
       </div>

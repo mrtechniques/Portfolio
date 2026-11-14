@@ -71,8 +71,8 @@ GOOGLE_DRIVE_ROOT_FOLDER_ID=your_portfolio_folder_id_here
 GITHUB_TOKEN=your_github_token_here
 
 # Contact & Social Links
-CONTACT_EMAIL=techniquesmr@gmail.com
-NEXT_PUBLIC_WHATSAPP_NUMBER=919876543210
+CONTACT_EMAIL=shajithtt786@gmail.com
+NEXT_PUBLIC_WHATSAPP_NUMBER=+919567272816
 NEXT_PUBLIC_INSTAGRAM_HANDLE=mr_techniques
 NEXT_PUBLIC_SITE_URL=https://mrtechniques.vercel.app
 ```
