@@ -6,7 +6,7 @@ import { useTheme, Theme } from '@/context/ThemeContext';
 import { ChevronDown, Sun, Moon, FastForward } from 'lucide-react';
 
 export interface ScrollIntroProps {
-  /** Configurable scroll track height (e.g. '400vh', '350vh') */
+  /** Configurable scroll track height (default: '320vh' for optimal pacing) */
   containerHeight?: string;
   /** Actual total frames available in sequence (190 for both light and dark) */
   frameCount?: number;
@@ -22,11 +22,11 @@ export interface ScrollIntroProps {
   showHud?: boolean;
 }
 
-// Landmark frames for fast scrubbing preview
+// Landmark keyframes across the sequence
 const LANDMARK_FRAMES = [1, 25, 50, 75, 100, 125, 150, 175, 190];
 
 function subscribeReducedMotion(callback: () => void) {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === 'undefined') return () => { };
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   mediaQuery.addEventListener('change', callback);
   return () => mediaQuery.removeEventListener('change', callback);
@@ -38,7 +38,7 @@ function getReducedMotionSnapshot() {
 }
 
 export default function ScrollIntro({
-  containerHeight = '400vh',
+  containerHeight = '320vh',
   frameCount = 190,
   themeOverride,
   onComplete,
@@ -85,9 +85,9 @@ export default function ScrollIntro({
 
   // Max cached images in memory (controlled to prevent mobile memory blowup)
   const maxCacheSize = useMemo(() => {
-    if (typeof window === 'undefined') return 40;
+    if (typeof window === 'undefined') return 45;
     const isMobile = window.innerWidth < 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
-    return isMobile ? 32 : 55;
+    return isMobile ? 35 : 60;
   }, []);
 
   // Format frame URL: /intro/{theme}/frame_0001.webp
@@ -95,113 +95,6 @@ export default function ScrollIntro({
     const padded = String(Math.max(1, Math.min(frameCount, frameIdx))).padStart(4, '0');
     return `/intro/${theme}/frame_${padded}.webp`;
   }, [frameCount]);
-
-  /**
-   * Evict frames farthest from currentFrame to strictly limit memory
-   */
-  const pruneCache = useCallback((centerFrame: number) => {
-    const cache = cacheRef.current;
-    if (cache.size <= maxCacheSize) return;
-
-    // Sort by distance from centerFrame descending (farthest first)
-    const sorted = Array.from(cache.keys()).sort((a, b) => {
-      // Keep frame 1 and final frame if possible
-      if (a === 1 || a === frameCount) return -1;
-      if (b === 1 || b === frameCount) return 1;
-      return Math.abs(b - centerFrame) - Math.abs(a - centerFrame);
-    });
-
-    const excessCount = cache.size - maxCacheSize;
-    for (let i = 0; i < excessCount; i++) {
-      const frameToEvict = sorted[i];
-      if (frameToEvict !== 1 && frameToEvict !== frameCount && frameToEvict !== centerFrame) {
-        const img = cache.get(frameToEvict);
-        if (img) {
-          img.src = ''; // Release memory
-        }
-        cache.delete(frameToEvict);
-      }
-    }
-  }, [frameCount, maxCacheSize]);
-
-  /**
-   * Load a single frame into memory
-   */
-  const loadFrame = useCallback((frameIdx: number, theme: Theme): Promise<HTMLImageElement> => {
-    const cache = cacheRef.current;
-    if (cache.has(frameIdx)) {
-      return Promise.resolve(cache.get(frameIdx)!);
-    }
-
-    const pending = pendingRequestsRef.current;
-    if (pending.has(frameIdx)) {
-      return pending.get(frameIdx)!;
-    }
-
-    const promise = new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = getFrameUrl(frameIdx, theme);
-
-      img.onload = () => {
-        // Ensure theme hasn't changed while loading
-        if (activeThemeRef.current === theme) {
-          cache.set(frameIdx, img);
-          pending.delete(frameIdx);
-          pruneCache(targetFrameRef.current);
-          resolve(img);
-        } else {
-          pending.delete(frameIdx);
-          resolve(img);
-        }
-      };
-
-      img.onerror = () => {
-        pending.delete(frameIdx);
-        reject(new Error(`Failed to load frame ${frameIdx}`));
-      };
-    });
-
-    pending.set(frameIdx, promise);
-    return promise;
-  }, [getFrameUrl, pruneCache]);
-
-  /**
-   * Near-frame preloader: loads immediate forward and backward window
-   */
-  const preloadNearFrames = useCallback((centerFrame: number, direction: 1 | -1) => {
-    const theme = activeThemeRef.current;
-    const forwardLookahead = direction === 1 ? 16 : 8;
-    const backwardLookahead = direction === 1 ? 6 : 14;
-
-    const framesToPreload: number[] = [];
-
-    // Prioritize direction of travel
-    if (direction === 1) {
-      for (let i = 1; i <= forwardLookahead; i++) {
-        const f = centerFrame + i;
-        if (f <= frameCount && !cacheRef.current.has(f)) framesToPreload.push(f);
-      }
-      for (let i = 1; i <= backwardLookahead; i++) {
-        const f = centerFrame - i;
-        if (f >= 1 && !cacheRef.current.has(f)) framesToPreload.push(f);
-      }
-    } else {
-      for (let i = 1; i <= backwardLookahead; i++) {
-        const f = centerFrame - i;
-        if (f >= 1 && !cacheRef.current.has(f)) framesToPreload.push(f);
-      }
-      for (let i = 1; i <= forwardLookahead; i++) {
-        const f = centerFrame + i;
-        if (f <= frameCount && !cacheRef.current.has(f)) framesToPreload.push(f);
-      }
-    }
-
-    // Fire preloads asynchronously without blocking UI
-    framesToPreload.forEach((f) => {
-      loadFrame(f, theme).catch(() => {});
-    });
-  }, [frameCount, loadFrame]);
 
   /**
    * Find closest already-cached frame to prevent any flashing
@@ -239,8 +132,8 @@ export default function ScrollIntro({
     const img = getNearestCachedFrame(frameIdx);
     const theme = activeThemeRef.current;
 
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+    const width = canvas.clientWidth || window.innerWidth || 1920;
+    const height = canvas.clientHeight || window.innerHeight || 1080;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     // Ensure canvas internal buffer matches display dimensions * DPR
@@ -281,14 +174,133 @@ export default function ScrollIntro({
   }, [getNearestCachedFrame]);
 
   /**
+   * Evict frames farthest from currentFrame to strictly limit memory
+   */
+  const pruneCache = useCallback((centerFrame: number) => {
+    const cache = cacheRef.current;
+    if (cache.size <= maxCacheSize) return;
+
+    // Sort by distance from centerFrame descending (farthest first)
+    const sorted = Array.from(cache.keys()).sort((a, b) => {
+      // Keep frame 1 and final frame if possible
+      if (a === 1 || a === frameCount) return -1;
+      if (b === 1 || b === frameCount) return 1;
+      return Math.abs(b - centerFrame) - Math.abs(a - centerFrame);
+    });
+
+    const excessCount = cache.size - maxCacheSize;
+    for (let i = 0; i < excessCount; i++) {
+      const frameToEvict = sorted[i];
+      if (frameToEvict !== 1 && frameToEvict !== frameCount && frameToEvict !== centerFrame) {
+        const img = cache.get(frameToEvict);
+        if (img) {
+          img.src = ''; // Release memory
+        }
+        cache.delete(frameToEvict);
+      }
+    }
+  }, [frameCount, maxCacheSize]);
+
+  /**
+   * Load a single frame into memory with immediate redraw trigger
+   */
+  const loadFrame = useCallback((frameIdx: number, theme: Theme): Promise<HTMLImageElement> => {
+    const cache = cacheRef.current;
+    if (cache.has(frameIdx)) {
+      return Promise.resolve(cache.get(frameIdx)!);
+    }
+
+    const pending = pendingRequestsRef.current;
+    if (pending.has(frameIdx)) {
+      return pending.get(frameIdx)!;
+    }
+
+    const promise = new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = getFrameUrl(frameIdx, theme);
+
+      img.onload = () => {
+        // Ensure theme hasn't changed while loading
+        if (activeThemeRef.current === theme) {
+          cache.set(frameIdx, img);
+          pending.delete(frameIdx);
+          pruneCache(targetFrameRef.current);
+
+          // CRITICAL BUG FIX: If this loaded frame is the current target frame, or closer than what's currently rendered,
+          // immediately trigger canvas redraw so the animation never gets stuck!
+          const currentTarget = targetFrameRef.current;
+          const currentRendered = currentRenderedFrameRef.current;
+          if (
+            frameIdx === currentTarget ||
+            Math.abs(frameIdx - currentTarget) <= Math.abs(currentRendered - currentTarget)
+          ) {
+            currentRenderedFrameRef.current = frameIdx;
+            renderCanvas(frameIdx);
+          }
+
+          resolve(img);
+        } else {
+          pending.delete(frameIdx);
+          resolve(img);
+        }
+      };
+
+      img.onerror = () => {
+        pending.delete(frameIdx);
+        reject(new Error(`Failed to load frame ${frameIdx}`));
+      };
+    });
+
+    pending.set(frameIdx, promise);
+    return promise;
+  }, [getFrameUrl, pruneCache, renderCanvas]);
+
+  /**
+   * Near-frame preloader: loads immediate forward and backward window
+   */
+  const preloadNearFrames = useCallback((centerFrame: number, direction: 1 | -1) => {
+    const theme = activeThemeRef.current;
+    const forwardLookahead = direction === 1 ? 18 : 8;
+    const backwardLookahead = direction === 1 ? 6 : 14;
+
+    const framesToPreload: number[] = [];
+
+    // Prioritize direction of travel
+    if (direction === 1) {
+      for (let i = 1; i <= forwardLookahead; i++) {
+        const f = centerFrame + i;
+        if (f <= frameCount && !cacheRef.current.has(f)) framesToPreload.push(f);
+      }
+      for (let i = 1; i <= backwardLookahead; i++) {
+        const f = centerFrame - i;
+        if (f >= 1 && !cacheRef.current.has(f)) framesToPreload.push(f);
+      }
+    } else {
+      for (let i = 1; i <= backwardLookahead; i++) {
+        const f = centerFrame - i;
+        if (f >= 1 && !cacheRef.current.has(f)) framesToPreload.push(f);
+      }
+      for (let i = 1; i <= forwardLookahead; i++) {
+        const f = centerFrame + i;
+        if (f <= frameCount && !cacheRef.current.has(f)) framesToPreload.push(f);
+      }
+    }
+
+    // Fire preloads asynchronously
+    framesToPreload.forEach((f) => {
+      loadFrame(f, theme).catch(() => { });
+    });
+  }, [frameCount, loadFrame]);
+
+  /**
    * Initial buffer loading on mount or theme change
    */
   useEffect(() => {
     // Reset caches for the active theme
     cacheRef.current.clear();
     pendingRequestsRef.current.clear();
-    
-    // Defer initial state reset to prevent cascading render warning
+
     queueMicrotask(() => {
       setIsFirstFrameReady(false);
       setLoadingProgress(5);
@@ -304,9 +316,9 @@ export default function ScrollIntro({
         setLoadingProgress(25);
         renderCanvas(1);
 
-        // Preload initial buffer frames 2..12 and landmarks
-        const initialBuffer = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-        const combined = Array.from(new Set([...initialBuffer, ...LANDMARK_FRAMES]));
+        // Preload frames 1..30 eagerly in parallel for immediate smooth start
+        const earlyBatch = Array.from({ length: 30 }, (_, i) => i + 1);
+        const combined = Array.from(new Set([...earlyBatch, ...LANDMARK_FRAMES]));
         let loadedCount = 1;
 
         combined.forEach((f) => {
@@ -316,7 +328,7 @@ export default function ScrollIntro({
               loadedCount++;
               setLoadingProgress(Math.round((loadedCount / combined.length) * 100));
             })
-            .catch(() => {});
+            .catch(() => { });
         });
       })
       .catch((err) => {
@@ -336,31 +348,30 @@ export default function ScrollIntro({
       const container = containerRef.current;
       if (!container) return;
 
-      const rect = container.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const scrollableDistance = container.offsetHeight - windowHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+      const containerTop = container.offsetTop;
+      const scrollableDistance = container.offsetHeight - window.innerHeight;
 
       if (scrollableDistance <= 0) return;
 
-      // Progress from 0 to 1
-      const progress = Math.max(0, Math.min(1, -rect.top / scrollableDistance));
+      // Progress clamped strictly between 0 and 1
+      const progress = Math.max(0, Math.min(1, (scrollTop - containerTop) / scrollableDistance));
       setScrollProgress(progress);
 
-      // Calculate target frame index
+      // Target frame index calculation (1 to frameCount)
       const targetFrame = Math.max(
         1,
-        Math.min(frameCount, Math.round(1 + progress * (frameCount - 1)))
+        Math.min(frameCount, 1 + Math.round(progress * (frameCount - 1)))
       );
       targetFrameRef.current = targetFrame;
       setCurrentFrameIndex(targetFrame);
 
-      // Determine scroll direction
-      const currentScrollY = window.scrollY;
-      const dir: 1 | -1 = currentScrollY >= lastScrollYRef.current ? 1 : -1;
+      // Scroll direction tracking
+      const dir: 1 | -1 = scrollTop >= lastScrollYRef.current ? 1 : -1;
       scrollDirectionRef.current = dir;
-      lastScrollYRef.current = currentScrollY;
+      lastScrollYRef.current = scrollTop;
 
-      // Trigger near-frame preloading
+      // Trigger preloading in direction of travel
       preloadNearFrames(targetFrame, dir);
 
       // Notify parent if needed
@@ -431,8 +442,11 @@ export default function ScrollIntro({
       className={`relative w-full ${activeTheme === 'light' ? 'bg-white text-zinc-900' : 'bg-[#08080b] text-[#f4f4f7]'}`}
       aria-label="MR TECHNIQUES Cinematic Scroll Intro"
     >
-      {/* Sticky Viewport Stage */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center select-none">
+      {/* Sticky Viewport Stage - Strictly 100svh pinned to top */}
+      <div
+        style={{ height: '100svh' }}
+        className="sticky top-0 w-full overflow-hidden flex items-center justify-center select-none"
+      >
         {/* Main Canvas rendering 1920x1080 WebP frames */}
         <canvas
           ref={canvasRef}
@@ -462,9 +476,8 @@ export default function ScrollIntro({
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6 }}
-              className={`absolute inset-0 z-30 flex flex-col items-center justify-center ${
-                activeTheme === 'light' ? 'bg-white text-zinc-800' : 'bg-[#08080b] text-white'
-              }`}
+              className={`absolute inset-0 z-30 flex flex-col items-center justify-center ${activeTheme === 'light' ? 'bg-white text-zinc-800' : 'bg-[#08080b] text-white'
+                }`}
             >
               <div className="w-48 flex flex-col items-center gap-3">
                 <div className="flex items-center gap-2 text-xs font-mono tracking-widest uppercase">

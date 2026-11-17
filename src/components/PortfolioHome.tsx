@@ -36,10 +36,10 @@ export default function PortfolioHome({
   };
 
   return (
-    <main className="relative min-h-screen bg-[#08080b] text-[#f4f4f7] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#08080b] text-[#f4f4f7] overflow-x-clip">
       {/* 00 // Fullscreen Cinematic Scroll-Driven Sequence (190 Frames WebP) */}
       <ScrollIntro
-        containerHeight="400vh"
+        containerHeight="320vh"
         frameCount={190}
         skipTargetId="portfolio-content"
       />
